@@ -15,8 +15,9 @@ app.use(bodyParser.json());
 
 app.use(
     cors({
-        origin: "https://kh-recaptcha.onrender.com", // allow your frontend origin
+        origin: "https://kh-brokers-main.webflow.io", // allow your frontend origin
         methods: ["GET", "POST"],
+        allowedHeaders: ["Content-Type", "Authorization"],
     })
 );
 
@@ -65,6 +66,14 @@ app.post("/api/submit", async (req, res) => {
     }
 });
 
+// Optional: handle preflight manually (some Render setups need this)
+app.options("/api/submit", (req, res) => {
+  res.header("Access-Control-Allow-Origin", "https://kh-brokers-main.webflow.io");
+  res.header("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type");
+  res.sendStatus(200);
+});
+
 app.listen(PORT, () => {
-    console.log(`Server running → http://https://kh-recaptcha.onrender.com:${PORT}`);
+    console.log(`Server running on port ${PORT}`);
 });
