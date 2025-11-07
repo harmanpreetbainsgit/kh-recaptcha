@@ -15,8 +15,7 @@ app.use(bodyParser.json());
 
 app.use(
     cors({
-        //origin: "http://localhost", // allow your frontend origin
-        origin: "https://kh-brokers-main.webflow.io", // allow your frontend origin
+        origin: ["http://localhost", "https://kh-brokers-main.webflow.io", "https://www.khbrokers.com/"],
         methods: ["GET", "POST"],
         allowedHeaders: ["Content-Type", "Authorization"],
     })
