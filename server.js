@@ -15,7 +15,8 @@ app.use(bodyParser.json());
 
 app.use(
     cors({
-        origin: "https://kh-brokers-main.webflow.io", // allow your frontend origin
+        origin: "http://localhost", // allow your frontend origin
+        //origin: "https://kh-brokers-main.webflow.io", // allow your frontend origin
         methods: ["GET", "POST"],
         allowedHeaders: ["Content-Type", "Authorization"],
     })
@@ -24,6 +25,21 @@ app.use(
 app.post("/api/submit", async (req, res) => {
     const token = req.body.recaptcha_token;
     const action = req.body.recaptcha_action || "submit";
+
+    const {
+        firstName,
+        phone,
+        email,
+        page_type,
+        page_extra,
+        utm_source,
+        utm_medium,
+        utm_campaign,
+        utm_content,
+        utm_term,
+        gclid,
+        recaptcha_token
+    } = req.body;
 
     if(!token) {
         return res.status(400).json({ success: false, message: "Missing reCAPTCHA token" });
@@ -58,8 +74,42 @@ app.post("/api/submit", async (req, res) => {
         }
 
         // reCAPTCHA verified successfully
-        console.log("reCAPTCHA success, score:", data.score);
-        return res.json({success: true,message: "reCAPTCHA verified successfully.", score: data.score});
+        
+        // Add to Mailchimp
+        const res_data = await fetch(`https://us6.api.mailchimp.com/3.0/lists/${process.env.MAILCHIMP_LIST_ID}/members`, {
+            method: "POST",
+            headers: {
+                "Authorization": `apikey ${process.env.MAILCHIMP_API_KEY}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                email_address: email,
+                status: "subscribed",
+                merge_fields: {
+                    FNAME: firstName,
+                    PHONE: phone,
+                    MMERGE2: page_type,
+                    UTM_SOURCE: utm_source,
+                    UTM_MEDIUM: utm_medium,
+                    UTM_CAMP: utm_campaign,
+                    UTM_CONTEN: utm_content,
+                    UTM_TERM: utm_term,
+                    GCLID: gclid
+                }
+            })
+        });
+
+
+        const mailchimp_res = await res_data.json();
+
+        if (res_data.status >= 400) {
+            return res.status(400).json({ success: false, message: mailchimp_res.detail || "Mailchimp error." });
+        }
+
+        return res.status(400).json({ success: true, message: "Submission successful! Thank you for subscribing." });
+
+
+
     } catch (err) {
         console.error("Error verifying reCAPTCHA:", err);
         return res.status(500).json({ success: false, message: "Server error verifying reCAPTCHA" });
