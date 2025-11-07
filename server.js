@@ -15,7 +15,7 @@ app.use(bodyParser.json());
 
 app.use(
     cors({
-        origin: "http://localhost", // allow your frontend origin
+        origin: "https://kh-recaptcha.onrender.com", // allow your frontend origin
         methods: ["GET", "POST"],
     })
 );
@@ -66,5 +66,5 @@ app.post("/api/submit", async (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`Server running → http://localhost:${PORT}`);
+    console.log(`Server running → http://https://kh-recaptcha.onrender.com:${PORT}`);
 });
