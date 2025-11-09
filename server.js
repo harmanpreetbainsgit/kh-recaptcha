@@ -73,14 +73,8 @@ app.post("/api/submit", async (req, res) => {
             return res.status(403).json({ success: false, message: "reCAPTCHA action mismatch" });
         }
 
-        if(data.hostname !== "khbrokers.com" && data.hostname !== "kh-brokers-main.webflow.io") {
-            //return res.status(403).json({ success: false, message: "Invalid reCAPTCHA hostname." + data });
-            return res.status(403).json({
-                success: false,
-                message: "Invalid reCAPTCHA hostname.",
-                hostname: data.hostname,  // cleaner to show only hostname
-                fullResponse: data         // optional for debugging
-            });
+        if(data.hostname !== "www.khbrokers.com" && data.hostname !== "kh-brokers-main.webflow.io") {
+            return res.status(403).json({ success: false, message: "Invalid reCAPTCHA hostname." });
         }
 
         if(data.score < 0.8) {
