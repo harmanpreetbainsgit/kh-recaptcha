@@ -37,8 +37,13 @@ app.post("/api/submit", async (req, res) => {
         utm_content,
         utm_term,
         gclid,
-        recaptcha_token
+        recaptcha_token,
+        company
     } = req.body;
+
+    if (company) {
+        return res.status(400).json({ success: false, message: "Bot detected (honeypot triggered)." });
+    }
 
     if(!token) {
         return res.status(400).json({ success: false, message: "Missing reCAPTCHA token" });
@@ -65,10 +70,14 @@ app.post("/api/submit", async (req, res) => {
 
         // Verify expected action and score threshold
         if(data.action !== action) {
-            return res.status(400).json({ success: false, message: "reCAPTCHA action mismatch" });
+            return res.status(403).json({ success: false, message: "reCAPTCHA action mismatch" });
         }
 
-        if(data.score < 0.5) {
+        if(data.hostname !== "khbrokers.com" && data.hostname !== "kh-brokers-main.webflow.io") {
+            return res.status(403).json({ success: false, message: "Invalid reCAPTCHA hostname." });
+        }
+
+        if(data.score < 0.8) {
             return res.status(403).json({success: false ,message: `Low reCAPTCHA score (${data.score}). Possible bot.`, score: data.score});
         }
 
@@ -105,7 +114,7 @@ app.post("/api/submit", async (req, res) => {
             return res.status(400).json({ success: false, message: mailchimp_res.detail || "Mailchimp error." });
         }
 
-        return res.status(400).json({ success: true, message: "Submission successful! Thank you for subscribing." });
+        return res.status(200).json({ success: true, message: "Submission successful! Thank you for subscribing." });
 
 
 
